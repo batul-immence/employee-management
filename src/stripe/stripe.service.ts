@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config'
 import { Stripe } from 'stripe'
 import * as util from 'util'
 import { Response } from 'express'
-import { employee } from 'src/database/database.providers'
+import { employee, paymentHistory } from 'src/database/database.providers'
 import { HttpService } from '@nestjs/axios'
 
 @Injectable()
@@ -45,7 +45,7 @@ export class StripeService {
               token: 'tok_in',
             }
           : {
-              number: '4242424242424242',
+              number: '5555555555554444',
               exp_month: 12,
               exp_year: 2024,
               cvc: '123',
@@ -67,6 +67,20 @@ export class StripeService {
         const paymentIntent = await this.stripe.paymentIntents.create(
           paymentIntentParams
         )
+        const payment_history = await paymentHistory.create({
+          payment_id: paymentIntent.id,
+          customer_id: paymentIntent.customer,
+          empId: employeeData.dataValues?.id,
+          customer_name: `${employeeData.dataValues?.firstName} ${employeeData.dataValues?.lastName}`,
+          order_id: paymentIntent.metadata.orderId,
+          payment_date: paymentIntent.created,
+          payment_amount: paymentIntent.amount,
+          payment_method: paymentIntent.payment_method,
+          payment_status: paymentIntent.status,
+          client_secret: paymentIntent.client_secret,
+          currency: paymentIntent.currency,
+          card_details: cardDetails,
+        })
         if (
           paymentIntent.status === 'requires_action' &&
           paymentIntent.next_action
@@ -80,18 +94,24 @@ export class StripeService {
             requiresAction: true,
             nextAction: paymentIntent.next_action,
             PaymentIntentId: paymentIntent.id,
+            paymentIntent,
           })
         }
         return response.send({ requiresAction: false, paymentIntent })
       } else {
+        const cardDetails = true
+          ? {
+              token: 'tok_in',
+            }
+          : {
+              number: '5555555555554444',
+              exp_month: 12,
+              exp_year: 2024,
+              cvc: '123',
+            }
         const paymentMethod = await this.stripe.paymentMethods.create({
           type: 'card',
-          card: {
-            number: '5555555555554444',
-            exp_month: 12,
-            exp_year: 2024,
-            cvc: '123',
-          },
+          card: cardDetails,
         })
 
         const customer = await this.stripe.customers.create({
@@ -120,6 +140,20 @@ export class StripeService {
         const paymentIntent = await this.stripe.paymentIntents.create(
           paymentIntentParams
         )
+        const payment_history = await paymentHistory.create({
+          payment_id: paymentIntent.id,
+          customer_id: paymentIntent.customer,
+          empId: employeeData.dataValues?.id,
+          customer_name: `${employeeData.dataValues?.firstName} ${employeeData.dataValues?.lastName}`,
+          order_id: paymentIntent.metadata.orderId,
+          payment_date: paymentIntent.created,
+          payment_amount: paymentIntent.amount,
+          payment_method: paymentIntent.payment_method,
+          payment_status: paymentIntent.status,
+          client_secret: paymentIntent.client_secret,
+          currency: paymentIntent.currency,
+          card_details: cardDetails,
+        })
         if (
           paymentIntent.status === 'requires_action' &&
           paymentIntent.next_action
@@ -149,6 +183,16 @@ export class StripeService {
         paymentIntentId
       )
       if (paymentIntent.status === 'succeeded') {
+        const payment_history = await paymentHistory.update(
+          {
+            payment_status: paymentIntent.status,
+          },
+          {
+            where: {
+              payment_id: paymentIntent.id,
+            },
+          }
+        )
         return response.send({
           isSuccess: true,
           message: 'Payment succeeded!',

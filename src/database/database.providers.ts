@@ -5,6 +5,7 @@ import { employeeModel } from 'src/models/employee.model'
 import { permissionModel } from 'src/models/permission.model'
 import { roleModel } from 'src/models/role.model'
 import { rolePermissionModel } from 'src/models/role-permission.model'
+import { paymentHistoryModel } from 'src/models/payment-history.model'
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -22,6 +23,7 @@ export const employee = employeeModel(sequelize, Sequelize)
 export const permission = permissionModel(sequelize, Sequelize)
 export const role = roleModel(sequelize, Sequelize)
 export const rolePermission = rolePermissionModel(sequelize, Sequelize)
+export const paymentHistory = paymentHistoryModel(sequelize, Sequelize)
 
 sequelize
   .authenticate()
