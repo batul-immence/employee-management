@@ -11,6 +11,7 @@ import * as util from 'util'
 import { Response } from 'express'
 import { employee, paymentHistory } from 'src/database/database.providers'
 import { HttpService } from '@nestjs/axios'
+import moment from 'moment'
 
 @Injectable()
 export class StripeService {
@@ -67,13 +68,14 @@ export class StripeService {
         const paymentIntent = await this.stripe.paymentIntents.create(
           paymentIntentParams
         )
+        var payment_date = new Date(paymentIntent.created * 1000)
         const payment_history = await paymentHistory.create({
           payment_id: paymentIntent.id,
           customer_id: paymentIntent.customer,
           empId: employeeData.dataValues?.id,
           customer_name: `${employeeData.dataValues?.firstName} ${employeeData.dataValues?.lastName}`,
           order_id: paymentIntent.metadata.orderId,
-          payment_date: paymentIntent.created,
+          payment_date: payment_date,
           payment_amount: paymentIntent.amount,
           payment_method: paymentIntent.payment_method,
           payment_status: paymentIntent.status,
@@ -140,13 +142,14 @@ export class StripeService {
         const paymentIntent = await this.stripe.paymentIntents.create(
           paymentIntentParams
         )
+        var payment_date = new Date(paymentIntent.created * 1000)
         const payment_history = await paymentHistory.create({
           payment_id: paymentIntent.id,
           customer_id: paymentIntent.customer,
           empId: employeeData.dataValues?.id,
           customer_name: `${employeeData.dataValues?.firstName} ${employeeData.dataValues?.lastName}`,
           order_id: paymentIntent.metadata.orderId,
-          payment_date: paymentIntent.created,
+          payment_date: payment_date,
           payment_amount: paymentIntent.amount,
           payment_method: paymentIntent.payment_method,
           payment_status: paymentIntent.status,
@@ -209,5 +212,44 @@ export class StripeService {
       }
     }
     return response.send('Payment Intent required')
+  }
+
+  async makeRefund(paymentId: string, response: Response) {
+    if (paymentId) {
+      const refund = await this.stripe.refunds.create({
+        payment_intent: paymentId,
+      })
+      if (refund.status === 'succeeded') {
+        var refund_date = new Date(refund.created * 1000)
+        const payment_history = await paymentHistory.update(
+          {
+            payment_status: 'Refunded',
+            refund_id: refund.id,
+            refund_amount: refund.amount,
+            refund_balance_transaction: refund.balance_transaction,
+            refund_charge: refund.charge,
+            refund_date: refund_date,
+          },
+          {
+            where: {
+              payment_id: refund.payment_intent,
+            },
+          }
+        )
+        return response.send({
+          isSuccess: true,
+          message: 'Refunded succeeded!',
+          code: HttpStatus.OK,
+          data: { refund },
+        })
+      } else {
+        return response.send({
+          isSuccess: false,
+          message: 'Refund failed!',
+          code: 401,
+          error: refund.status,
+        })
+      }
+    }
   }
 }

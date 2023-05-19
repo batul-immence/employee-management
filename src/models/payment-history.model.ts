@@ -23,6 +23,11 @@ export const paymentHistoryModel = (sequelize: Sequelize, Sequelize) => {
       currency: Sequelize.STRING(225),
       card_details: Sequelize.JSON,
       payment_gateway: Sequelize.STRING(20),
+      refund_id: Sequelize.STRING(225),
+      refund_amount: Sequelize.INTEGER,
+      refund_balace_transaction: Sequelize.STRING(225),
+      refund_charge: Sequelize.STRING(225),
+      refund_date: Sequelize.DATE,
       isActive: {
         type: Sequelize.ENUM(0, 1),
         defaultValue: 1,

@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common'
 import { create_permission_dto } from './dto/create_permission_dto'
-import { permission } from 'src/database/database.providers'
+import { permission, rolePermission } from 'src/database/database.providers'
 import { Response } from 'express'
+// import sequelize from 'sequelize/types/sequelize'
+const { Sequelize } = require('sequelize')
 
 @Injectable()
 export class PermissionService {
@@ -12,6 +14,18 @@ export class PermissionService {
     const permissionCreate = await permission.create({
       permission: createPermission.permission,
     })
+    // const rolePermissionUpdateAdmin = await rolePermission.update(
+    //   {
+    //     permissions: Sequelize.literal(
+    //       `ARRAY_APPEND(permissions, '${createPermission.permission}')`
+    //     ),
+    //   },
+    //   {
+    //     where: {
+    //       role: 0,
+    //     },
+    //   }
+    // )
     if (permissionCreate) {
       throw response.send({
         isSuccess: true,

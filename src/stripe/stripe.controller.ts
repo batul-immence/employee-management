@@ -61,4 +61,17 @@ export class StripeController {
   ): Promise<any> {
     return this.stripeService.completePaymentAuth(PaymentIntentId, response)
   }
+
+  @Version('1')
+  @ApiOperation({ summary: 'Payment Intent' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Post('makeRefund/:id')
+  public async makeRefund(
+    @Param('id') PaymentIntentId: string,
+    @Req() request: Request,
+    @Res() response: Response
+  ): Promise<any> {
+    return this.stripeService.makeRefund(PaymentIntentId, response)
+  }
 }
