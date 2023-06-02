@@ -9,7 +9,8 @@ import { RolePermissionModule } from './role-permission/role-permission.module'
 import { AuthModule } from './auth/auth.module'
 import { JwtStrategy } from './guard/jwt.strategy'
 import { StripeModule } from './stripe/stripe.module'
-import { PaymentHistoryModule } from './payment-history/payment-history.module';
+import { PaymentHistoryModule } from './payment-history/payment-history.module'
+import { IntegrationModule } from './integration/integration.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { PaymentHistoryModule } from './payment-history/payment-history.module';
     AuthModule,
     StripeModule,
     PaymentHistoryModule,
+    IntegrationModule,
   ],
   controllers: [AppController],
   providers: [AppService, JwtStrategy],

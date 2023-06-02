@@ -19,8 +19,11 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Employee API')
     .setVersion('1.0')
-    .addServer(`http://localhost:3000`)
-    .addServer('http://192.168.29.180:3000')
+    .addServer(
+      `https://2c6a-2405-201-2028-d024-5dd8-253c-8165-8ec.ngrok-free.app`
+    )
+    // .addServer(`http://localhost:3000`)
+    // .addServer('http://192.168.29.180:3000')
     .addBearerAuth(
       {
         description: `Please enter token`,
